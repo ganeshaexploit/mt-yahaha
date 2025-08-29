@@ -1,0 +1,128 @@
+-- ⚡ Brutal Teleport Multi-Point CFrame Loop by Ganesha Exploit ⚡
+-- ✅ CFrame Brutal (instan, tanpa auto mantul)
+-- ✅ UI Modern ON/OFF + Hotkey [T]
+-- ✅ Delay 0.2s antar checkpoint
+-- ✅ Auto reset 1s setelah checkpoint terakhir
+-- ✅ Setelah reset, auto jalan lagi dengan aman (loop terus)
+-- ✅ Notifikasi asli Roblox: Auto Summit by Ganesha Exploit
+
+--=== Services ===--
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local UIS = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+--=== Checkpoints (CFrame) ===--
+local points = {
+    CFrame.new(23.00, 224.80, -40.00),
+    CFrame.new(-735.86, 237.47, 143.95),
+    CFrame.new(-773.49, 244.65, 824.49),
+    CFrame.new(-144.52, 220.71, 697.18),
+    CFrame.new(572.24, 429.40, 508.13),
+    CFrame.new(1261.47, 549.27, 24.04),
+    CFrame.new(1235.19, 530.22, 437.00),
+    CFrame.new(1469.70, 633.55, 487.35),
+    CFrame.new(1889.27, 1265.61, 1041.03)
+}
+
+--=== Vars ===--
+local teleportEnabled = false
+local delayTime = 0.2
+local autoResetDelay = 1
+local running = false -- cegah loop ganda
+
+--=== Notification ===--
+local function notify(msg)
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "⚡ Auto Summit by Ganesha Exploit",
+            Text = msg,
+            Duration = 2
+        })
+    end)
+end
+
+--=== Teleport Function ===--
+local function startTeleport()
+    if running then return end -- cegah loop ganda
+    running = true
+
+    task.spawn(function()
+        while task.wait() do
+            if not teleportEnabled then
+                running = false
+                break
+            end
+
+            local char = player.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                for i, cf in ipairs(points) do
+                    if not teleportEnabled then break end
+                    if not char or not char:FindFirstChild("HumanoidRootPart") then break end
+                    hrp.CFrame = cf
+                    task.wait(delayTime)
+
+                    -- checkpoint terakhir → auto reset
+                    if i == #points then
+                        notify("✅ Semua checkpoint selesai! Reset dalam " .. autoResetDelay .. " detik...")
+                        task.wait(autoResetDelay)
+                        if char and char:FindFirstChild("Humanoid") then
+                            char:BreakJoints()
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+--=== Respawn Handler ===--
+player.CharacterAdded:Connect(function(char)
+    char:WaitForChild("HumanoidRootPart") -- tunggu HRP siap
+    if teleportEnabled then
+        task.wait(1)
+        notify("⚡ Teleport auto lanjut setelah respawn!")
+        startTeleport()
+    end
+end)
+
+--=== UI Modern ===--
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local Frame = Instance.new("Frame", ScreenGui)
+local UICorner = Instance.new("UICorner", Frame)
+local Button = Instance.new("TextButton", Frame)
+local UIStroke = Instance.new("UIStroke", Frame)
+
+Frame.Size = UDim2.new(0, 200, 0, 60)
+Frame.Position = UDim2.new(0.5, -100, 0.9, -30)
+Frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+UIStroke.Color = Color3.fromRGB(0, 200, 255)
+UICorner.CornerRadius = UDim.new(0, 12)
+
+Button.Size = UDim2.new(1,0,1,0)
+Button.Text = "⚡ Teleport: OFF"
+Button.TextColor3 = Color3.fromRGB(255,255,255)
+Button.BackgroundTransparency = 1
+Button.Font = Enum.Font.GothamBold
+Button.TextSize = 18
+
+Button.MouseButton1Click:Connect(function()
+    teleportEnabled = not teleportEnabled
+    Button.Text = teleportEnabled and "⚡ Teleport: ON" or "⚡ Teleport: OFF"
+    notify(teleportEnabled and "Teleport Aktif!" or "Teleport Nonaktif!")
+    if teleportEnabled then startTeleport() end
+end)
+
+--=== Hotkey Toggle [T] ===--
+UIS.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.T then
+        teleportEnabled = not teleportEnabled
+        Button.Text = teleportEnabled and "⚡ Teleport: ON" or "⚡ Teleport: OFF"
+        notify(teleportEnabled and "Teleport Aktif!" or "Teleport Nonaktif!")
+        if teleportEnabled then startTeleport() end
+    end
+end)
+
+--=== First Run Info ===--
+notify("🚀 Auto Summit by Ganesha Exploit siap digunakan!")
