@@ -1,15 +1,10 @@
--- ⚡ Brutal Teleport Multi-Point CFrame Loop by Ganesha Exploit ⚡
--- ✅ CFrame Brutal (instan, tanpa auto mantul)
--- ✅ Delay 0.2s antar checkpoint
--- ✅ Auto reset 1s setelah checkpoint terakhir
--- ✅ Setelah reset, auto jalan lagi dengan aman (loop terus)
--- ✅ Notifikasi asli Roblox: Auto Summit by Ganesha Exploit
--- ✅ Tidak ada UI & Hotkey
+-- ⚡ Auto Summit by Ganesha Exploit (Modern UI Native + Toggle ON/OFF Manual Start) ⚡
 
 --=== Services ===--
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
 --=== Checkpoints (CFrame) ===--
 local points = {
@@ -25,16 +20,16 @@ local points = {
 }
 
 --=== Vars ===--
-local teleportEnabled = true -- langsung aktif
+local teleportEnabled = false -- default OFF
 local delayTime = 0.2
 local autoResetDelay = 1
-local running = false -- cegah loop ganda
+local running = false
 
---=== Notification ===--
+--=== Notification Function ===--
 local function notify(msg)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
-            Title = "⚡ Auto Summit by Ganesha Exploit",
+            Title = "⚡ Auto Summit",
             Text = msg,
             Duration = 2
         })
@@ -43,7 +38,7 @@ end
 
 --=== Teleport Function ===--
 local function startTeleport()
-    if running then return end -- cegah loop ganda
+    if running then return end
     running = true
 
     task.spawn(function()
@@ -62,7 +57,6 @@ local function startTeleport()
                     hrp.CFrame = cf
                     task.wait(delayTime)
 
-                    -- checkpoint terakhir → auto reset
                     if i == #points then
                         notify("✅ Semua checkpoint selesai! Reset dalam " .. autoResetDelay .. " detik...")
                         task.wait(autoResetDelay)
@@ -78,7 +72,7 @@ end
 
 --=== Respawn Handler ===--
 player.CharacterAdded:Connect(function(char)
-    char:WaitForChild("HumanoidRootPart") -- tunggu HRP siap
+    char:WaitForChild("HumanoidRootPart")
     if teleportEnabled then
         task.wait(1)
         notify("⚡ Teleport auto lanjut setelah respawn!")
@@ -86,6 +80,64 @@ player.CharacterAdded:Connect(function(char)
     end
 end)
 
---=== First Run Info ===--
-notify("🚀 Auto Summit by Ganesha Exploit aktif otomatis!")
-startTeleport()
+--=== Modern Native UI (Hanya Buat Sekali) ===--
+if not player:FindFirstChild("PlayerGui"):FindFirstChild("AutoSummitUI") then
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "AutoSummitUI"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 200, 0, 80)
+    MainFrame.Position = UDim2.new(0, 50, 0, 50)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = MainFrame
+
+    local Title = Instance.new("TextLabel")
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.Position = UDim2.new(0,0,0,0)
+    Title.BackgroundTransparency = 1
+    Title.Text = "⚡ Auto Summit"
+    Title.TextColor3 = Color3.fromRGB(255,255,255)
+    Title.Font = Enum.Font.SourceSansBold
+    Title.TextSize = 18
+    Title.Parent = MainFrame
+
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(1, -20, 0, 40)
+    ToggleButton.Position = UDim2.new(0, 10, 0, 35)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Font = Enum.Font.SourceSansBold
+    ToggleButton.TextSize = 16
+    ToggleButton.Text = "Teleport: OFF"
+    ToggleButton.Parent = MainFrame
+
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 8)
+    toggleCorner.Parent = ToggleButton
+
+    -- Toggle Logic
+    ToggleButton.MouseButton1Click:Connect(function()
+        teleportEnabled = not teleportEnabled
+        if teleportEnabled then
+            ToggleButton.Text = "Teleport: ON"
+            notify("🚀 Teleport diaktifkan!")
+            startTeleport()
+        else
+            ToggleButton.Text = "Teleport: OFF"
+            notify("⛔ Teleport dinonaktifkan!")
+            running = false
+        end
+    end)
+end
+
+--=== First Run ===--
+notify("⚡ Auto Summit siap! Gunakan tombol untuk memulai teleport.")
